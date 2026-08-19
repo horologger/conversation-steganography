@@ -96,7 +96,9 @@ def main():
                 if not ids:
                     raise ValueError("model context cannot be empty")
                 input_ids = torch.tensor([ids], device=args.device)
-                with torch.inference_mode():
+                # no_grad rather than inference_mode: the masking below is an
+                # in-place update, which PyTorch forbids on inference tensors.
+                with torch.no_grad():
                     logits = model(input_ids=input_ids).logits[0, -1].float()
                 if special:
                     logits[list(special)] = -torch.inf
